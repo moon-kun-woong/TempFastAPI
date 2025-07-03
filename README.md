@@ -5,12 +5,11 @@ Python FastAPI를 사용한 간단한 CRUD애플리케이션입니다.
 
 ## 기술 스택
 
-- Python 3.7+
+- Python 3.8.0
 - FastAPI
 - Uvicorn (ASGI 서버)
-- SQLAlchemy 2.0(ORM)
+- SQLAlchemy 2.0 (ORM)
 - SQLite (데이터베이스)
-- Pytest (테스트)
 
 ## 설치 방법
 
@@ -41,8 +40,7 @@ TempFastAPIProject/
 │   ├── database.py       # 데이터베이스 연결 설정
 │   ├── models.py         # SQLAlchemy 모델 (데이터베이스 테이블)
 │   ├── schemas.py        # Pydantic 모델/스키마 (요청/응답 검증)
-│   ├── crud.py           # CRUD 작업 함수
-│   └── tests/            # 테스트 코드
+│   └── crud.py           # CRUD 작업 함수
 ├── requirements.txt      # 의존성 패키지 목록
 └── README.md             # 프로젝트 설명
 ```
