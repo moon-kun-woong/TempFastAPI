@@ -8,7 +8,7 @@ Python FastAPI를 사용한 간단한 CRUD애플리케이션입니다.
 - Python 3.7+
 - FastAPI
 - Uvicorn (ASGI 서버)
-- SQLAlchemy (ORM)
+- SQLAlchemy 2.0(ORM)
 - SQLite (데이터베이스)
 - Pytest (테스트)
 
@@ -30,7 +30,6 @@ uvicorn app.main:app --reload
 
 2. 브라우저에서 다음 URL 접속:
    - API 문서: http://localhost:8000/docs (Swagger UI)
-   - 대체 문서: http://localhost:8000/redoc (ReDoc)
 
 ## 프로젝트 구조
 
@@ -55,9 +54,3 @@ TempFastAPIProject/
 - `GET /items/{item_id}`: ID로 특정 아이템 조회
 - `PUT /items/{item_id}`: 아이템 업데이트
 - `DELETE /items/{item_id}`: 아이템 삭제
-
-## 테스트 실행
-
-```bash
-pytest app/tests
-```
