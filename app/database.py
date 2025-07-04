@@ -1,25 +1,38 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+import sqlite3
+from typing import Generator
 
+DB_FILE = "app.db"
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./app.db"
+INIT_DB_SQL = """
+CREATE TABLE IF NOT EXISTS items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    description TEXT,
+    is_active INTEGER DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
+CREATE INDEX IF NOT EXISTS idx_items_title ON items (title);
+"""
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
+def get_connection():
+    conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row
+    return conn
+def init_db():
+    conn = get_connection()
+    conn.executescript(INIT_DB_SQL)
+    conn.close()
 
-
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-
-Base = declarative_base()
-
-
-def get_db():
-    db = SessionLocal()
+def get_db() -> Generator[sqlite3.Connection, None, None]:
+    conn = get_connection()
     try:
-        yield db
+        conn.execute("PRAGMA foreign_keys = ON")
+        yield conn
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     finally:
-        db.close()
+        conn.close()
+init_db()

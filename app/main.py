@@ -3,13 +3,11 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from pydantic import ValidationError
-from sqlalchemy.orm import Session
+import sqlite3
 from typing import List, Dict, Any
 
-from . import models, schemas, crud
-from .database import engine, get_db
-
-models.Base.metadata.create_all(bind=engine)
+from . import schemas, crud
+from .database import get_db
 
 app = FastAPI(
     title="Item API",
@@ -67,7 +65,7 @@ async def http_exception_handler(request: Request, exception: HTTPException):
         }
     }
 )
-def create_item(item: schemas.ItemCreate, db: Session = Depends(get_db)):
+def create_item(item: schemas.ItemCreate, db: sqlite3.Connection = Depends(get_db)):
     try:
         return crud.create_item(db=db, item=item)
     except ValidationError as e:
@@ -84,7 +82,7 @@ def create_item(item: schemas.ItemCreate, db: Session = Depends(get_db)):
     summary="아이템 목록 조회",
     description="전체 아이템 목록을 조회합니다."
 )
-def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_items(skip: int = 0, limit: int = 100, db: sqlite3.Connection = Depends(get_db)):
     items = crud.get_items(db, skip=skip, limit=limit)
     return items
 
@@ -102,7 +100,7 @@ def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
         }
     }
 )
-def read_item(item_id: int, db: Session = Depends(get_db)):
+def read_item(item_id: int, db: sqlite3.Connection = Depends(get_db)):
     return crud.get_item(db, item_id=item_id)
 
 @app.put(
@@ -117,7 +115,7 @@ def read_item(item_id: int, db: Session = Depends(get_db)):
         409: {"model": schemas.ConflictError}
     }
 )
-def update_item(item_id: int, item: schemas.ItemUpdate, db: Session = Depends(get_db)):
+def update_item(item_id: int, item: schemas.ItemUpdate, db: sqlite3.Connection = Depends(get_db)):
     return crud.update_item(db, item_id=item_id, item=item)
 
 @app.delete(
@@ -130,7 +128,7 @@ def update_item(item_id: int, item: schemas.ItemUpdate, db: Session = Depends(ge
         404: {"model": schemas.HTTPError}
     }
 )
-def delete_item(item_id: int, db: Session = Depends(get_db)):
+def delete_item(item_id: int, db: sqlite3.Connection = Depends(get_db)):
     crud.delete_item(db, item_id=item_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -146,5 +144,5 @@ def delete_item(item_id: int, db: Session = Depends(get_db)):
         409: {"model": schemas.ConflictError}
     }
 )
-def patch_item(item_id: int, item: schemas.ItemUpdate, db: Session = Depends(get_db)):
+def patch_item(item_id: int, item: schemas.ItemUpdate, db: sqlite3.Connection = Depends(get_db)):
     return crud.update_item(db, item_id=item_id, item=item)
