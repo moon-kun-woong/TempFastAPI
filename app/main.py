@@ -1,6 +1,10 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Response
+from fastapi import FastAPI, Depends, HTTPException, status, Response, Request
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Dict, Any
 
 from . import models, schemas, crud
 from .database import engine, get_db
@@ -15,9 +19,43 @@ app = FastAPI(
     version="1.0.0"
 )
 
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exception: RequestValidationError):
+    """
+    요청 데이터 유효성 검증 실패 시 422 응답 반환
+    """
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content=jsonable_encoder({
+            "detail": exception.errors(),
+            "message": "입력 데이터 유효성 검증에 실패했습니다."
+        }),
+    )
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exception: HTTPException):
+    """
+    HTTP 예외 발생 시 커스텀 응답 형식 반환
+    """
+    return JSONResponse(
+        status_code=exception.status_code,
+        content={
+            "detail": exception.detail,
+            "status_code": exception.status_code
+        },
+    )
+
 @app.post("/items/", response_model=schemas.Item, status_code=status.HTTP_201_CREATED, tags=["Items"], description="아이템하나를 생성하는 API")
 def create_item(item: schemas.ItemCreate, db: Session = Depends(get_db)):
-    return crud.create_item(db=db, item=item)
+    try:
+        return crud.create_item(db=db, item=item)
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid input: {str(e)}"
+        )
 
 @app.get("/items/", response_model=List[schemas.Item],status_code=status.HTTP_200_OK, tags=["Items"], description="아이템들을 조회하는 API")
 def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
