@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List, Any, Dict
 from datetime import datetime
 
 
@@ -35,3 +35,24 @@ class Item(ItemBase):
         "from_attributes": True,
         "extra": "forbid",
     }
+
+class HTTPError(BaseModel):
+    """HTTP 에러 응답"""
+    detail: str
+    status_code: int
+
+class ValidationErrorDetail(BaseModel):
+    """유효성 검증 에러 상세"""
+    loc: List[str]
+    msg: str
+    type: str
+
+class ValidationErrorResponse(BaseModel):
+    """유효성 검증 에러 응답"""
+    detail: List[ValidationErrorDetail]
+    message: str
+
+class ConflictError(BaseModel):
+    """중복 데이터 에러 (409)"""
+    detail: str
+    status_code: int = 409
