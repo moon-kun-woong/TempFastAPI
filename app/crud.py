@@ -5,7 +5,6 @@ from . import schemas
 
 
 def row_to_dict(row) -> Dict[str, Any]:
-    """SQLite Row 객체를 딕셔너리로 변환"""
     if not row:
         return {}
     
@@ -13,7 +12,6 @@ def row_to_dict(row) -> Dict[str, Any]:
 
 
 def get_item_by_title(db: sqlite3.Connection, title: str) -> Optional[Dict[str, Any]]:
-    """제목으로 아이템 조회"""
     query = "SELECT * FROM items WHERE title = ?"
     cursor = db.execute(query, (title,))
     item = cursor.fetchone()
@@ -21,7 +19,6 @@ def get_item_by_title(db: sqlite3.Connection, title: str) -> Optional[Dict[str, 
 
 
 def create_item(db: sqlite3.Connection, item: schemas.ItemCreate) -> Dict[str, Any]:
-    """새 아이템 생성"""
     existing_item = get_item_by_title(db, title=item.title)
     if existing_item:
         raise HTTPException(
@@ -43,7 +40,6 @@ def create_item(db: sqlite3.Connection, item: schemas.ItemCreate) -> Dict[str, A
 
 
 def get_items(db: sqlite3.Connection, skip: int = 0, limit: int = 10) -> List[Dict[str, Any]]:
-    """아이템 목록 조회"""
     query = "SELECT * FROM items LIMIT ? OFFSET ?"
     cursor = db.execute(query, (limit, skip))
     items = cursor.fetchall()
@@ -51,7 +47,6 @@ def get_items(db: sqlite3.Connection, skip: int = 0, limit: int = 10) -> List[Di
 
 
 def get_item(db: sqlite3.Connection, item_id: int) -> Dict[str, Any]:
-    """ID로 아이템 조회"""
     query = "SELECT * FROM items WHERE id = ?"
     cursor = db.execute(query, (item_id,))
     item = cursor.fetchone()
@@ -66,7 +61,6 @@ def get_item(db: sqlite3.Connection, item_id: int) -> Dict[str, Any]:
 
 
 def update_item(db: sqlite3.Connection, item_id: int, item: schemas.ItemUpdate) -> Dict[str, Any]:
-    """아이템 수정"""
     existing_item = get_item(db, item_id)
     update_data = item.dict(exclude_unset=True)
     if not update_data:
@@ -99,7 +93,6 @@ def update_item(db: sqlite3.Connection, item_id: int, item: schemas.ItemUpdate) 
 
 
 def delete_item(db: sqlite3.Connection, item_id: int) -> Dict[str, Any]:
-    """아이템 삭제"""
     item = get_item(db, item_id)
     
     query = "DELETE FROM items WHERE id = ?"

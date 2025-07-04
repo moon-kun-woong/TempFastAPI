@@ -23,9 +23,6 @@ app = FastAPI(
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exception: RequestValidationError):
-    """
-    요청 데이터 유효성 검증 실패 시 422 응답 반환
-    """
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content=jsonable_encoder({
@@ -36,9 +33,6 @@ async def validation_exception_handler(request: Request, exception: RequestValid
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exception: HTTPException):
-    """
-    HTTP 예외 발생 시 커스텀 응답 형식 반환
-    """
     return JSONResponse(
         status_code=exception.status_code,
         content={
