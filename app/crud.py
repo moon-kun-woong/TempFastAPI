@@ -29,7 +29,7 @@ def create_item(db: sqlite3.Connection, item: schemas.ItemCreate) -> Dict[str, A
             detail=f"Item with title '{item.title}' already exists"
         )
         
-    item_data = item.model_dump()
+    item_data = item.dict()
     
     query = """INSERT INTO items (title, description, is_active) 
               VALUES (?, ?, ?)"""
@@ -68,7 +68,7 @@ def get_item(db: sqlite3.Connection, item_id: int) -> Dict[str, Any]:
 def update_item(db: sqlite3.Connection, item_id: int, item: schemas.ItemUpdate) -> Dict[str, Any]:
     """아이템 수정"""
     existing_item = get_item(db, item_id)
-    update_data = item.model_dump(exclude_unset=True)
+    update_data = item.dict(exclude_unset=True)
     if not update_data:
         return existing_item
     

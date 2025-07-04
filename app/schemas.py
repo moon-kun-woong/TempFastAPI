@@ -8,9 +8,8 @@ class ItemBase(BaseModel):
     description: Optional[str] = Field(None, description="아이템에 대한 상세 설명")
     is_active: Optional[bool] = Field(True, description="아이템 활성화 상태")
     
-    model_config = {
-        "extra": "forbid",
-    }
+    class Config:
+        extra = "forbid"
 
 
 class ItemCreate(ItemBase):
@@ -22,19 +21,17 @@ class ItemUpdate(BaseModel):
     description: Optional[str] = Field(None, description="업데이트할 아이템의 상세 설명")
     is_active: Optional[bool] = Field(None, description="업데이트할 아이템의 활성화 상태")
     
-    model_config = {
-        "extra": "forbid",
-    }
+    class Config:
+        extra = "forbid"
 
 
 class Item(ItemBase):
     id: int = Field(..., description="아이템의 고유 ID")
     created_at: datetime = Field(..., description="아이템 생성 시간")
     
-    model_config = {
-        "from_attributes": True,
-        "extra": "forbid",
-    }
+    class Config:
+        orm_mode = True
+        extra = "forbid"
 
 class HTTPError(BaseModel):
     """HTTP 에러 응답"""
