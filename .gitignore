@@ -7,3 +7,5 @@ app/__pycache__/models.cpython-38.pyc
 app/__pycache__/schemas.cpython-38.pyc
 app/tests/*
 app/tests/test_api.py
+app.log
+app.db.bak
