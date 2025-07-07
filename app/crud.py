@@ -13,8 +13,8 @@ def row_to_dict(row) -> Dict[str, Any]:
 
 def get_item_by_title(db: sqlite3.Connection, title: str) -> Optional[Dict[str, Any]]:
     query = "SELECT * FROM items WHERE title = ?"
-    db_executer = db.execute(query, (title,))
-    item = db_executer.fetchone()
+    result = db.execute(query, (title,))
+    item = result.fetchone()
     return row_to_dict(item) if item else None
 
 
@@ -30,26 +30,26 @@ def create_item(db: sqlite3.Connection, item: schemas.ItemCreate) -> Dict[str, A
     
     query = """INSERT INTO items (title, description, is_active) 
               VALUES (?, ?, ?)"""
-    db_executer = db.execute(
+    result = db.execute(
         query, 
         (item_data['title'], item_data.get('description'), item_data.get('is_active', True))
     )
     
-    created_id = db_executer.lastrowid
+    created_id = result.lastrowid
     return get_item(db, created_id)
 
 
 def get_items(db: sqlite3.Connection, skip: int = 0, limit: int = 10) -> List[Dict[str, Any]]:
     query = "SELECT * FROM items LIMIT ? OFFSET ?"
-    db_executer = db.execute(query, (limit, skip))
-    items = db_executer.fetchall()
+    result = db.execute(query, (limit, skip))
+    items = result.fetchall()
     return [row_to_dict(item) for item in items]
 
 
 def get_item(db: sqlite3.Connection, item_id: int) -> Dict[str, Any]:
     query = "SELECT * FROM items WHERE id = ?"
-    db_executer = db.execute(query, (item_id,))
-    item = db_executer.fetchone()
+    result = db.execute(query, (item_id,))
+    item = result.fetchone()
     
     if not item:
         raise HTTPException(
