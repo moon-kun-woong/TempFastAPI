@@ -24,71 +24,34 @@ app = FastAPI(
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
-# 기존 핸들러 제거
-for handler in logger.handlers:
-    logger.removeHandler(handler)
-# 새 파일 핸들러 생성
-import codecs
-file_handler = logging.FileHandler('info.log', 'a', 'utf-8')
+
+file_handler = logging.FileHandler('info.log', 'a', 'utf-8') # "a" 는 append 모드 : 파일이 존재하면 파일 맨 끝에 로그 추가
 file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 logger.addHandler(file_handler)
 
-def log_info(req_body, res_body):
-    logging.info(req_body)
-    logging.info(res_body)
-
-# 요청 본문을 여러 번 읽을 수 있게 해주는 함수
-def modified_receive(body):
-    async def receive():
-        return {"type": "http.request", "body": body, "more_body": False}
-    return receive
-
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    # 기본 로깅 정보
-    logger = logging.getLogger("custom_logger")
     logger.info(f"Request: {request.method} {request.url}")
     
-    # 요청 본문 읽기
     req_body = await request.body()
+    request._body = req_body
     
-    # 요청 본문을 로그에 기록
-    if req_body:
-        try:
-            # UTF-8로 디코딩 시도
-            decoded_req = req_body.decode('utf-8')
-            logging.info(f"[요청 본문] {decoded_req}")
-        except UnicodeDecodeError:
-            # 디코딩 실패 시 원본 바이너리 로깅
-            logging.info(f"[요청 본문(바이너리)] {req_body}")
-    
-    # 요청 본문을 다시 읽을 수 있도록 설정
-    request._receive = modified_receive(req_body)
-    
-    # 다음 핸들러 호출
     response = await call_next(request)
-    
-    # 응답 상태 코드 로깅
     logger.info(f"Response: {response.status_code}")
     
-    # 응답 본문 읽기
-    res_body = b""
+    response_body = b""
     async for chunk in response.body_iterator:
-        res_body += chunk
+        response_body += chunk
     
-    # 응답 본문을 로그에 기록
-    if res_body:
+    if response_body:
         try:
-            # UTF-8로 디코딩 시도
-            decoded_res = res_body.decode('utf-8')
-            logging.info(f"[응답 본문] {decoded_res}")
+            decoded_res = response_body.decode('utf-8')
+            logger.info(f"[응답 본문] {decoded_res}")
         except UnicodeDecodeError:
-            # 디코딩 실패 시 원본 바이너리 로깅
-            logging.info(f"[응답 본문(바이너리)] {res_body}")
+            logger.info(f"[응답 본문(에러)] {response_body}")
     
-    # 응답 반환 (본문을 읽었으므로 새 응답 객체 생성)
     return Response(
-        content=res_body,
+        content=response_body,
         status_code=response.status_code,
         headers=dict(response.headers),
         media_type=response.media_type
